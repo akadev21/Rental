@@ -13,6 +13,23 @@ class RentalOrder(models.Model):
     rental_return_date = fields.Datetime(string='Rental Return')
     rental_reservation_ids = fields.One2many('rental.reservation', 'order_id', string='Rental Reservations')
 
+    @api.depends('order_line.price_total', 'order_line.rental_price')
+    def _amount_all(self):
+        """
+        Compute the total amounts of the SO.
+        """
+        for order in self:
+            amount_untaxed = amount_tax = rental_price = 0.0
+            for line in order.order_line:
+                amount_untaxed += line.price_subtotal
+                amount_tax += line.price_tax
+                rental_price += line.rental_price
+            order.update({
+                'amount_untaxed': amount_untaxed,
+                'amount_tax': amount_tax,
+                'amount_total': amount_untaxed + amount_tax + rental_price,
+            })
+
     def reset_dates(self):
         for line in self.order_line:
             line.rental_start_date = self.rental_start_date
@@ -90,7 +107,6 @@ class RentalOrderLine(models.Model):
                     rental_price += pricing.price * line.rental_months
 
             line.rental_price = rental_price * line.product_uom_qty
-
 
     @api.constrains('product_id', 'product_uom_qty')
     def check_quantity(self):

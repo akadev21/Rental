@@ -41,11 +41,7 @@
                        position="after">
                     <field name="rental_start_date" string="Start Date"/>
                     <field name="rental_end_date" string="Ending Date"/>
-                    <field name="rental_hours" string="Hours"/>
-                    <field name="rental_days" string="Days"/>
-                    <field name="rental_weeks" string="Weeks"/>
-                    <field name="rental_months" string="Month"/>
-                    <field name="rental_price" string="Price"/>
+                    <field name="rental_price" string="Rental Price"/>
 
                 </xpath>
 
