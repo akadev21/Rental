@@ -1,17 +1,43 @@
 from odoo import models, fields, api, exceptions
-import logging
 from dateutil.relativedelta import relativedelta
+import logging
 
 _logger = logging.getLogger(__name__)
-
 
 class RentalOrder(models.Model):
     _inherit = 'sale.order'
 
     rental_start_date = fields.Datetime(string='Rental Start Date')
     rental_end_date = fields.Datetime(string='Rental End Date')
-    rental_return_date = fields.Datetime(string='Rental Return')
+    rental_return_date = fields.Datetime(string='Rental Return Date')
     rental_reservation_ids = fields.One2many('rental.reservation', 'order_id', string='Rental Reservations')
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('sent', 'Quotation Sent'),
+        ('sale', 'Sale Order'),
+        ('done', 'Locked'),
+        ('cancel', 'Cancelled'),
+        ('rented', 'Rented')
+    ], string='Status', readonly=True, copy=False, index=True, tracking=3, default='draft')
+
+    def action_confirm(self):
+        res = super(RentalOrder, self).action_confirm()
+        self.write({'state': 'sale'})
+        return res
+
+    def action_quotation_send(self):
+        self.ensure_one()
+        self.write({'state': 'sent'})
+        return super(RentalOrder, self).action_quotation_send()
+
+    def action_rent(self):
+        self.write({'state': 'rented'})
+
+    def action_done(self):
+        self.write({'state': 'done'})
+
+    def action_cancel(self):
+        self.write({'state': 'cancel'})
 
     @api.depends('order_line.price_total', 'order_line.rental_price')
     def _amount_all(self):
@@ -31,12 +57,18 @@ class RentalOrder(models.Model):
             })
 
     def reset_dates(self):
+        """
+        Reset rental dates for all order lines.
+        """
         for line in self.order_line:
             line.rental_start_date = self.rental_start_date
             line.rental_end_date = self.rental_end_date
 
     @api.model
     def create(self, values):
+        """
+        Override the create method to handle rental product reservations.
+        """
         if 'order_line' in values:
             order_lines = values['order_line']
             rental_products = []
@@ -54,21 +86,14 @@ class RentalOrder(models.Model):
                 values['rental_reservation_ids'] = [(0, 0, rental) for rental in rental_products]
         return super(RentalOrder, self).create(values)
 
-
 class RentalOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
-    rental_start_date = fields.Datetime(related='order_id.rental_start_date', string='Rental Start Date', store=True,
-                                        readonly=False)
-    rental_end_date = fields.Datetime(related='order_id.rental_end_date', string='Rental End Date', store=True,
-                                      readonly=False)
-    rental_return_date = fields.Datetime(related='order_id.rental_return_date', string='Rental Return Date', store=True,
-                                         readonly=False)
-    # rental_price = fields.Float(string='Rental Price', compute='_compute_rental_price', store=True)
-
+    rental_start_date = fields.Datetime(related='order_id.rental_start_date', string='Rental Start Date', store=True, readonly=False)
+    rental_end_date = fields.Datetime(related='order_id.rental_end_date', string='Rental End Date', store=True, readonly=False)
+    rental_return_date = fields.Datetime(related='order_id.rental_return_date', string='Rental Return Date', store=True, readonly=False)
     rental_pricing_id = fields.Many2one('rental.pricing', string='Rental Pricing')
 
-    # price for different Units
     rental_months = fields.Integer(string='Rental Months', compute='_compute_rental_breakdown', store=True)
     rental_weeks = fields.Integer(string='Rental Weeks', compute='_compute_rental_breakdown', store=True)
     rental_days = fields.Integer(string='Rental Days', compute='_compute_rental_breakdown', store=True)
@@ -79,7 +104,6 @@ class RentalOrderLine(models.Model):
         for line in self:
             if line.rental_start_date and line.rental_end_date:
                 duration = relativedelta(line.rental_end_date, line.rental_start_date)
-
                 line.rental_months = duration.years * 12 + duration.months
                 line.rental_weeks = duration.days // 7
                 line.rental_days = duration.days % 7
@@ -91,11 +115,9 @@ class RentalOrderLine(models.Model):
     def _compute_rental_price(self):
         for line in self:
             rental_price = 0.0
-
             pricing_records = line.env['rental.pricing'].search([
                 ('product_template_id', '=', line.product_id.product_tmpl_id.id)
             ])
-
             for pricing in pricing_records:
                 if pricing.period_id.unit == 'hour' and line.rental_hours:
                     rental_price += pricing.price * line.rental_hours
@@ -105,7 +127,6 @@ class RentalOrderLine(models.Model):
                     rental_price += pricing.price * line.rental_weeks
                 elif pricing.period_id.unit == 'month' and line.rental_months:
                     rental_price += pricing.price * line.rental_months
-
             line.rental_price = rental_price * line.product_uom_qty
 
     @api.constrains('product_id', 'product_uom_qty')

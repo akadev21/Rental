@@ -1,61 +1,66 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<odoo>
+    <odoo>
+        <data>
+            <!-- Rental Order Tree View -->
+            <record id="rental_order_tree_view" model="ir.ui.view">
+                <field name="name">sale.order.tree.rental</field>
+                <field name="model">sale.order</field>
+                <field name="inherit_id" ref="sale.view_order_tree"/>
+                <field name="arch" type="xml">
+                    <xpath expr="//field[@name='date_order']" position="after">
+                        <field name="rental_start_date" string="Rental Start Date"/>
+                        <field name="rental_end_date" string="Rental End Date"/>
+                    </xpath>
+                </field>
+            </record>
 
-    <data>
+            <!-- Rental Order Form View -->
+            <record id="rental_order_form_view" model="ir.ui.view">
+                <field name="name">sale.order.form.rental</field>
+                <field name="model">sale.order</field>
+                <field name="inherit_id" ref="sale.view_order_form"/>
+                <field name="arch" type="xml">
+                    <!-- Add rental start and end dates after the partner field -->
+                    <xpath expr="//form/sheet/group/group/field[@name='partner_id']" position="after">
+                        <field name="rental_start_date" string="Rental Start Date"/>
+                        <field name="rental_end_date" string="Rental End Date"/>
+                        <button name="reset_dates" string="Reset Dates" type="object" class="btn-secondary"/>
+                    </xpath>
+                    <!-- Restrict product selection to rentable products -->
+                    <xpath expr="//form/sheet/notebook/page/field[@name='order_line']/tree/field[@name='product_id']"
+                           position="attributes">
+                        <attribute name="domain">[('can_be_rented', '=', True)]</attribute>
+                    </xpath>
+                    <!-- Add rental-specific fields to order line tree view -->
+                    <xpath expr="//form/sheet/notebook/page/field[@name='order_line']/tree" position="inside">
+                        <field name="rental_start_date"/>
+                        <field name="rental_end_date"/>
+                        <field name="rental_price"/>
+                    </xpath>
+                    <!-- Add rental-specific state transitions -->
+                    <xpath expr="//header/button[@name='action_confirm']" position="replace">
+                        <button name="action_quotation_send" string="Send by Email" type="object" class="btn-secondary"
+                                attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                        <button name="action_confirm" string="Confirm Order" type="object" class="btn-primary"
+                                attrs="{'invisible': [('state', 'not in', ('sent', 'confirmed'))]}"/>
+                        <button name="action_cancel" string="Cancel Order" type="object" class="btn-danger"
+                                attrs="{'invisible': [('state', 'not in', ('draft', 'sent', 'confirmed', 'pickup'))]}"/>
+                        <button name="preview_sale_order" string="Customer Preview" type="object" class="btn-primary"
+                                attrs="{'invisible': [('state', '!=', 'confirmed')]}"/>
+                        <button name="action_pickup_order" string="Pickup Order" type="object" class="btn-primary"
+                                attrs="{'invisible': [('state', '!=', 'paid')]}"/>
+                        <button name="action_return_order" string="Return Order" type="object" class="btn-primary"
+                                attrs="{'invisible': [('state', '!=', 'rented')]}"/>
+                    </xpath>
+                </field>
+            </record>
 
-        <record id="rental_order_tree_view" model="ir.ui.view">
-            <field name="name">sale order template inherit form</field>
-            <field name="model">sale.order</field>
-            <field name="inherit_id" ref="sale.view_order_tree"/>
-            <field name="arch" type="xml">
-                <xpath expr="//field[@name='date_order']" position="after">
-                    <field name="rental_start_date" string="Rental Start Date"/>
-                    <field name="rental_end_date" string="Rental Ending Date"/>
-                </xpath>
-
-            </field>
-
-        </record>
-
-        <record id="rental_order_line_view" model="ir.ui.view">
-            <field name="name">rental order line inherit form</field>
-            <field name="model">sale.order</field>
-            <field name="inherit_id" ref="sale.view_order_form"/>
-            <field name="arch" type="xml">
-                <xpath expr="/form/sheet/group/group/field[@name='partner_id']" position="after">
-
-                    <field name="rental_start_date" string="Rental Start Date"/>
-                    <field name="rental_end_date" string="Rental End Date"/>
-                    <button name="reset_dates" string="Reset Dates" type="object" class="btn-secondary"/>
-
-                </xpath>
-                <xpath expr="/form/sheet/notebook/page/field[@name='order_line']/tree/field[@name='product_id']"
-                       position="attributes">
-                    <attribute name="domain">[('can_be_rented', '=', True)]</attribute>
-                </xpath>
-                <xpath expr="/form/sheet/notebook/page/field[@name='order_line']/tree/field[@name='name']"
-                       position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath>
-                <xpath expr="/form/sheet/notebook/page/field[@name='order_line']/tree/field[@name='name']"
-                       position="after">
-                    <field name="rental_start_date" string="Start Date"/>
-                    <field name="rental_end_date" string="Ending Date"/>
-                    <field name="rental_price" string="Rental Price"/>
-
-                </xpath>
-
-            </field>
-
-        </record>
-
-        <record id="action_rental_order" model="ir.actions.act_window">
-            <field name="name">Rental Order</field>
-            <field name="res_model">sale.order</field>
-            <field name="view_mode">tree,form,kanban</field>
-
-
-        </record>
-
-    </data>
-</odoo>
+            <!-- Define Rental Orders Action -->
+            <record id="action_rental_orders" model="ir.actions.act_window">
+                <field name="name">Rental Orders</field>
+                <field name="res_model">sale.order</field>
+                <field name="view_mode">tree,form,kanban</field>
+                <field name="context">{'search_default_rented': 1, 'default_state': 'rented'}</field>
+                <field name="domain">[('state', '=', 'rented')]</field>
+            </record>
+        </data>
+    </odoo>
