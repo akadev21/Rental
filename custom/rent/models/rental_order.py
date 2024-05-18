@@ -1,8 +1,6 @@
-from odoo import models, fields, api, exceptions
 from dateutil.relativedelta import relativedelta
-import logging
+from odoo import models, fields, api, exceptions
 
-_logger = logging.getLogger(__name__)
 
 class RentalOrder(models.Model):
     _inherit = 'sale.order'
@@ -17,12 +15,13 @@ class RentalOrder(models.Model):
         ('sale', 'Sale Order'),
         ('done', 'Locked'),
         ('cancel', 'Cancelled'),
+        ('reserved', 'Reserved'),
         ('rented', 'Rented')
     ], string='Status', readonly=True, copy=False, index=True, tracking=3, default='draft')
 
     def action_confirm(self):
         res = super(RentalOrder, self).action_confirm()
-        self.write({'state': 'sale'})
+        self.write({'state': 'reserved'})  # Change to 'reserved' instead of 'sale' to follow rental workflow
         return res
 
     def action_quotation_send(self):
@@ -39,11 +38,20 @@ class RentalOrder(models.Model):
     def action_cancel(self):
         self.write({'state': 'cancel'})
 
+    def action_pickup_order(self):
+        for order in self:
+            if order.state != 'reserved':
+                raise exceptions.UserError('You can only pick up orders that are in the "Reserved" state.')
+            order.write({'state': 'rented'})
+
+    def action_return_order(self):
+        for order in self:
+            if order.state != 'rented':
+                raise exceptions.UserError('You can only return orders that are in the "Rented" state.')
+            order.write({'state': 'done'})
+
     @api.depends('order_line.price_total', 'order_line.rental_price')
     def _amount_all(self):
-        """
-        Compute the total amounts of the SO.
-        """
         for order in self:
             amount_untaxed = amount_tax = rental_price = 0.0
             for line in order.order_line:
@@ -57,9 +65,6 @@ class RentalOrder(models.Model):
             })
 
     def reset_dates(self):
-        """
-        Reset rental dates for all order lines.
-        """
         for line in self.order_line:
             line.rental_start_date = self.rental_start_date
             line.rental_end_date = self.rental_end_date
@@ -78,13 +83,14 @@ class RentalOrder(models.Model):
                 if product.can_be_rented:
                     rental_products.append({
                         'product_id': product_id,
-                        'qty': line[2].get('product_uom_qty'),
+                        'quantity': line[2].get('product_uom_qty'),
                         'start_date': values.get('rental_start_date'),
                         'end_date': values.get('rental_end_date')
                     })
             if rental_products:
                 values['rental_reservation_ids'] = [(0, 0, rental) for rental in rental_products]
         return super(RentalOrder, self).create(values)
+
 
 class RentalOrderLine(models.Model):
     _inherit = 'sale.order.line'
