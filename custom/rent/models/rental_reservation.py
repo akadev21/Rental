@@ -9,7 +9,8 @@ class RentalReservation(models.Model):
     order_id = fields.Many2one('sale.order', string='Rental Order', required=True)
     start_date = fields.Datetime(string='Start Date', required=True)
     end_date = fields.Datetime(string='End Date', required=True)
-    quantity = fields.Float(string='Quantity Reserved')
+    quantity_reserved = fields.Float(string='Quantity Reserved')  # Renamed field
+    quantity_delivered = fields.Float(string='Quantity Delivered')
 
     _sql_constraints = [
         ('reservation_unique', 'unique(product_id, start_date, end_date)',
@@ -18,13 +19,13 @@ class RentalReservation(models.Model):
 
     @api.model
     def create(self, values):
-        if 'quantity' not in values:
+        if 'quantity_reserved' not in values:
             order_line = self.env['sale.order.line'].search([
                 ('order_id', '=', values.get('order_id')),
                 ('product_id', '=', values.get('product_id'))
             ], limit=1)
             if order_line:
-                values['quantity'] = order_line.product_uom_qty
+                values['quantity_reserved'] = order_line.product_uom_qty
         return super(RentalReservation, self).create(values)
 
     @api.onchange('order_id', 'product_id')
@@ -35,7 +36,7 @@ class RentalReservation(models.Model):
                 ('product_id', '=', self.product_id.id)
             ], limit=1)
             if order_line:
-                self.quantity = order_line.product_uom_qty
+                self.quantity_reserved = order_line.product_uom_qty
 
     @api.constrains('product_id', 'start_date', 'end_date')
     def _check_reservation_dates(self):

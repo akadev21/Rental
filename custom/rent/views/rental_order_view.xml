@@ -2,6 +2,7 @@
     <data>
 
         <!-- Rental Order Tree View -->
+        <!-- Rental Order Tree View -->
         <record id="rental_order_tree_view" model="ir.ui.view">
             <field name="name">sale.order.tree.rental</field>
             <field name="model">sale.order</field>
@@ -23,52 +24,47 @@
             <field name="arch" type="xml">
                 <!-- Add rental start and end dates after the partner field -->
                 <xpath expr="//form/sheet/group/group/field[@name='partner_id']" position="after">
-
                     <field name="rental_start_date" string="Rental Start Date"/>
                     <field name="rental_end_date" string="Rental End Date"/>
-
                     <button name="reset_dates" string="Reset Dates" type="object" class="btn-secondary"/>
                 </xpath>
                 <!-- Restrict product selection to rentable products -->
-                <xpath expr="/form/sheet/notebook/page/field[@name='order_line']/tree/field[@name='product_id']"
-                       position="attributes">
+                <xpath expr="//field[@name='product_id']" position="attributes">
                     <attribute name="domain">[('can_be_rented', '=', True)]</attribute>
                 </xpath>
-                <xpath expr="/form/sheet/notebook/page/field[@name='order_line']/tree/field[@name='name']"
-                       position="attributes">
-                    <attribute name="invisible">1</attribute>
-                </xpath>
                 <!-- Add rental-specific fields to order line tree view -->
-                <xpath expr="/form/sheet/notebook/page/field[@name='order_line']/tree/field[@name='name']"
-                       position="after">
+                <xpath expr="//field[@name='order_line']/tree" position="inside">
                     <field name="rental_start_date"/>
                     <field name="rental_end_date"/>
                     <field name="rental_price"/>
                 </xpath>
                 <!-- Add rental-specific state transitions -->
                 <xpath expr="//header" position="inside">
-                    <xpath expr="//button[@name='action_quotation_send']" position="attributes">
-                        <attribute name="attrs">{'invisible': [('state', 'not in', ['draft'])]}</attribute>
-                    </xpath>
-                    <xpath expr="//button[@name='action_confirm']" position="attributes">
-                        <attribute name="attrs">{'invisible': [('state', 'not in', ['sent'])]}</attribute>
-                    </xpath>
-                    <xpath expr="//button[@name='action_cancel']" position="attributes">
-                        <attribute name="attrs">{'invisible': [('state', 'not in', ['draft', 'sent', 'reserved',
-                            'rented'])]}
-                        </attribute>
-                    </xpath>
+                    <xpath expr="/button[@name='action_quotation_send']" position="attributes">
+                    <attribute name="attrs">{'invisible': [('state', 'not in', ['draft'])]}</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_confirm']" position="attributes">
+                    <attribute name="attrs">{'invisible': [('state', 'not in', ['sent', 'confirmed'])]}</attribute>
+                </xpath>
+                <xpath expr="//button[@name='action_cancel']" position="attributes">
+                    <attribute name="attrs">{'invisible': [('state', 'not in', ['draft', 'sent', 'confirmed',
+                        'pickup'])]}
+                    </attribute>
+                </xpath>
                     <button name="preview_sale_order" string="Customer Preview" type="object" class="btn-primary"
                             attrs="{'invisible': [('state', '!=', 'confirmed')]}"/>
                     <button name="action_pickup_order" string="Pickup Order" type="object" class="btn-primary"
                             attrs="{'invisible': [('state', '!=', 'reserved')]}"/>
+                    <button name="action_draft" string="Draft" type="object" class="btn-primary"
+                           />
                     <button name="action_return_order" string="Return Order" type="object" class="btn-primary"
                             attrs="{'invisible': [('state', '!=', 'rented')]}"/>
                 </xpath>
+                <!-- Modify button visibility based on order state -->
+
             </field>
         </record>
 
-        <!-- Pickup Order Wizard View -->
         <record id="pickup_order_wizard_view" model="ir.ui.view">
             <field name="name">pickup.order.wizard.form</field>
             <field name="model">pickup.order.wizard</field>
@@ -76,16 +72,17 @@
                 <form string="Pickup Order">
                     <group>
                         <field name="pickup_date"/>
+                        <field name="order_id" invisible="1"/>
+                        <field name="line_ids"/>
                     </group>
                     <footer>
-                        <button name="action_pickup_order" string="Pickup" type="object" class="btn-primary"/>
+                        <button string="Confirm Pickup" type="object" name="action_pickup_order" class="btn-primary"/>
                         <button string="Cancel" class="btn-secondary" special="cancel"/>
                     </footer>
                 </form>
             </field>
         </record>
 
-        <!-- Return Order Wizard View -->
         <record id="return_order_wizard_view" model="ir.ui.view">
             <field name="name">return.order.wizard.form</field>
             <field name="model">return.order.wizard</field>
@@ -93,35 +90,22 @@
                 <form string="Return Order">
                     <group>
                         <field name="return_date"/>
+                        <field name="order_id" invisible="1"/>
+                        <field name="line_ids"/>
                     </group>
                     <footer>
-                        <button name="action_return_order" string="Return" type="object" class="btn-primary"/>
+                        <button string="Confirm Return" type="object" name="action_return_order" class="btn-primary"/>
                         <button string="Cancel" class="btn-secondary" special="cancel"/>
                     </footer>
                 </form>
             </field>
         </record>
-        <!-- Define Rental Orders Search View -->
-        <record id="rental_order_search_view" model="ir.ui.view">
-            <field name="name">rental.order.search</field>
-            <field name="model">sale.order</field>
-            <field name="arch" type="xml">
-                <search>
-                    <field name="state" string="Order State"/>
-                </search>
-            </field>
-        </record>
-
-        <!-- Define Rental Orders Action -->
-        <!-- Define Rental Orders Action with default state draft -->
         <record id="action_rental_order" model="ir.actions.act_window">
             <field name="name">Rental Orders</field>
             <field name="res_model">sale.order</field>
             <field name="view_mode">tree,form,kanban</field>
-            <field name="context">{'default_state': 'draft'}</field>
-            <field name="domain">[('state', '!=', 'draft')]</field>
-            <field name="search_view_id" ref="rental_order_search_view"/>
-
+            <field name="context">{'search_default_rented': 1, 'default_state': 'rented'}</field>
+            <field name="domain">[('state', '=', 'rented')]</field>
         </record>
     </data>
 </odoo>

@@ -7,7 +7,10 @@ access_rental_reservation,access_rental_reservation,model_rental_reservation,,1,
 access_sale_order,access_sale_order,model_sale_order,,1,1,1,1
 access_sale_order_line,access_sale_order_line,model_sale_order_line,,1,1,1,1
 access_pickup_order_wizard,access_pickup_order_wizard,model_pickup_order_wizard,,1,1,1,1
+access_pickup_order_wizard_line,access_pickup_order_wizard_line,model_pickup_order_wizard_line,,1,1,1,1
 access_return_order_wizard,access_return_order_wizard,model_return_order_wizard,,1,1,1,1
+access_return_order_wizard_line,access_return_order_wizard_line,model_return_order_wizard_line,,1,1,1,1
+
 
 
 

@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="product.product_template_only_form_view"/>
             <field name="arch" type="xml">
                 <xpath expr="//button[@name='action_open_quants']" position="after">
-                    <button class="oe_stat_button" name="button_empty" type="object" icon="fa-calendar">
+                    <button class="oe_stat_button" name="on_rent" type="object" icon="fa-calendar">
                         <div class="o_field_widget o_stat_info">
                             <span class="o_stat_value d-flex gap-1">
                                 <field name="on_rent" widget="statinfo" nolabel="1" class="oe_inline"/>
@@ -28,59 +28,41 @@
                         <field name="can_be_rented" string="Can be Rented"/>
                         <label for="can_be_rented" modifiers="{}"/>
                     </div>
-
                 </xpath>
                 <xpath expr="//page[@name='general_information']" position="after">
                     <page string="Time-based pricing" name="pricing">
                         <group>
-
-
                             <group string="Rental Pricing" name="pricing">
-
                                 <field name="rental_pricing_ids" nolabel="1" modifiers="{}">
                                     <tree editable="bottom">
-                                        
-
                                         <field name="period_id" widget="Many2one_tags"/>
                                         <field name="price"/>
                                         <field name="price_list_id"/>
-
                                     </tree>
                                 </field>
-
-
                             </group>
-
-                            <group string="Reservations" name="extra_rental"
-                            >
-                                <field name="extra_hour" widget="monetary" field_id="extra_hourly_0"/>
-                                <field name="extra_day" widget="monetary" field_id="extra_daily_0"/>
-                                <field name="currency_id" invisible="1" on_change="1" field_id="currency_id_1"/>
+                            <group string="Reservations" name="extra_rental">
+                                <field name="extra_hour" widget="monetary"/>
+                                <field name="extra_day" widget="monetary"/>
+                                <field name="currency_id" invisible="1" on_change="1"/>
                                 <label for="security_time"/>
                                 <div>
-                                    <field name="security_time" widget="float_time"
-                                           class="oe_inline p-0 col-lg-2" field_id="security_time"/>
+                                    <field name="security_time" widget="float_time" class="oe_inline p-0 col-lg-2"/>
                                     <label for="security_time" string="hours before orders" class="oe_inline"/>
                                 </div>
                             </group>
-
-
                         </group>
-
-
                     </page>
-
                 </xpath>
             </field>
         </record>
 
-
+        <!-- Product Kanban View -->
         <record id="rental_product_kanban_view_" model="ir.ui.view">
             <field name="name">Product.kanban</field>
             <field name="model">product.product</field>
             <field name="arch" type="xml">
                 <kanban sample="1">
-
                     <templates>
                         <t t-name="kanban-box">
                             <div class="oe_kanban_global_click">
@@ -103,8 +85,8 @@
                                     </div>
                                     <div name="product_lst_price" class="mt-1">
                                         Price:
-                                        <field name="lst_price" widget="monetary"
-                                               options="{'currency_field': 'currency_id', 'field_digits': True}"></field>
+                                        <field name="list_price" widget="monetary"
+                                               options="{'currency_field': 'currency_id', 'field_digits': True}"/>
                                     </div>
                                 </div>
                             </div>
@@ -114,12 +96,11 @@
             </field>
         </record>
 
+        <!-- Product Action -->
         <record id="action_product" model="ir.actions.act_window">
             <field name="name">Product</field>
             <field name="res_model">product.template</field>
             <field name="view_mode">tree,form,kanban</field>
-
-
         </record>
 
     </data>

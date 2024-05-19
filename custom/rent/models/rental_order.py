@@ -5,6 +5,8 @@ from odoo import models, fields, api, exceptions
 class RentalOrder(models.Model):
     _inherit = 'sale.order'
 
+    partner_id = fields.Many2one('res.partner', string='Customer', required=True, size=64)
+
     rental_start_date = fields.Datetime(string='Rental Start Date')
     rental_end_date = fields.Datetime(string='Rental End Date')
     rental_return_date = fields.Datetime(string='Rental Return Date')
@@ -29,8 +31,8 @@ class RentalOrder(models.Model):
         self.write({'state': 'sent'})
         return super(RentalOrder, self).action_quotation_send()
 
-    def action_rent(self):
-        self.write({'state': 'rented'})
+    def action_draft(self):
+        self.write({'state': 'draft'})
 
     def action_done(self):
         self.write({'state': 'done'})
@@ -39,16 +41,84 @@ class RentalOrder(models.Model):
         self.write({'state': 'cancel'})
 
     def action_pickup_order(self):
-        for order in self:
-            if order.state != 'reserved':
-                raise exceptions.UserError('You can only pick up orders that are in the "Reserved" state.')
-            order.write({'state': 'rented'})
+        self.ensure_one()
+
+        # Ensure the order is in the 'reserved' state
+        if self.state != 'reserved':
+            raise exceptions.UserError('Order must be in reserved state to pick up.')
+
+        # Initialize a dictionary to store picked up quantities per product
+        picked_up_quantities = {}
+
+        # Retrieve reservations for the order's products
+        for line in self.order_line:
+            reservation = self.env['rental.reservation'].search([
+                ('order_id', '=', self.id),
+                ('product_id', '=', line.product_id.id)
+            ], limit=1)
+
+            # Update quantity reserved and quantity delivered
+            if reservation:
+                reservation.write({
+                    'quantity_reserved': reservation.quantity_reserved - line.product_uom_qty,
+                    'quantity_delivered': reservation.quantity_delivered + line.product_uom_qty,
+                })
+
+            # Update picked up quantities dictionary
+            if line.product_id.id in picked_up_quantities:
+                picked_up_quantities[line.product_id.id] += line.product_uom_qty
+            else:
+                picked_up_quantities[line.product_id.id] = line.product_uom_qty
+
+        # Update on_rent quantities for picked up products
+        for product_id, picked_up_qty in picked_up_quantities.items():
+            product = self.env['product.product'].browse(product_id)
+            product.write({'on_rent': product.on_rent + picked_up_qty})
+
+        # Update order state to 'rented' or any appropriate state
+        self.write({'state': 'rented'})
+
+        return True
 
     def action_return_order(self):
-        for order in self:
-            if order.state != 'rented':
-                raise exceptions.UserError('You can only return orders that are in the "Rented" state.')
-            order.write({'state': 'done'})
+        self.ensure_one()
+
+        # Ensure the order is in the 'rented' state
+        if self.state != 'rented':
+            raise exceptions.UserError('Order must be in rented state to return.')
+
+        # Initialize a dictionary to store returned quantities per product
+        returned_quantities = {}
+
+        # Retrieve reservations for the order's products
+        for line in self.order_line:
+            reservation = self.env['rental.reservation'].search([
+                ('order_id', '=', self.id),
+                ('product_id', '=', line.product_id.id)
+            ], limit=1)
+
+            # Update quantity reserved and quantity delivered
+            if reservation:
+                reservation.write({
+                    'quantity_reserved': reservation.quantity_reserved + line.product_uom_qty,
+                    'quantity_delivered': reservation.quantity_delivered - line.product_uom_qty,
+                })
+
+            # Update returned quantities dictionary
+            if line.product_id.id in returned_quantities:
+                returned_quantities[line.product_id.id] += line.product_uom_qty
+            else:
+                returned_quantities[line.product_id.id] = line.product_uom_qty
+
+        # Update on-hand quantities for returned products
+        for product_id, returned_qty in returned_quantities.items():
+            product = self.env['product.product'].browse(product_id)
+            product.write({'on_rent': product.on_rent - returned_qty})
+
+        # Update order state to 'done' or any appropriate state
+        self.write({'state': 'done'})
+
+        return True
 
     @api.depends('order_line.price_total', 'order_line.rental_price')
     def _amount_all(self):
@@ -91,13 +161,22 @@ class RentalOrder(models.Model):
                 values['rental_reservation_ids'] = [(0, 0, rental) for rental in rental_products]
         return super(RentalOrder, self).create(values)
 
+    # @api.model
+    # def create(self, values):
+    #     if 'state' not in values:
+    #         values['state'] = 'draft'
+    #     return super(RentalOrder, self).create(values)
+
 
 class RentalOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
-    rental_start_date = fields.Datetime(related='order_id.rental_start_date', string='Rental Start Date', store=True, readonly=False)
-    rental_end_date = fields.Datetime(related='order_id.rental_end_date', string='Rental End Date', store=True, readonly=False)
-    rental_return_date = fields.Datetime(related='order_id.rental_return_date', string='Rental Return Date', store=True, readonly=False)
+    rental_start_date = fields.Datetime(related='order_id.rental_start_date', string='Rental Start Date', store=True,
+                                        readonly=False)
+    rental_end_date = fields.Datetime(related='order_id.rental_end_date', string='Rental End Date', store=True,
+                                      readonly=False)
+    rental_return_date = fields.Datetime(related='order_id.rental_return_date', string='Rental Return Date', store=True,
+                                         readonly=False)
     rental_pricing_id = fields.Many2one('rental.pricing', string='Rental Pricing')
 
     rental_months = fields.Integer(string='Rental Months', compute='_compute_rental_breakdown', store=True)
