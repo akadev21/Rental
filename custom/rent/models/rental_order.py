@@ -12,14 +12,36 @@ class RentalOrder(models.Model):
     rental_return_date = fields.Datetime(string='Rental Return Date')
     rental_reservation_ids = fields.One2many('rental.reservation', 'order_id', string='Rental Reservations')
     state = fields.Selection([
-        ('draft', 'Draft'),
+        ('draft', 'Quotation'),
         ('sent', 'Quotation Sent'),
         ('sale', 'Sale Order'),
         ('done', 'Locked'),
-        ('cancel', 'Cancelled'),
         ('reserved', 'Reserved'),
-        ('rented', 'Rented')
+        ('cancel', 'Cancelled'),
+        ('rented', 'Rented'),  # Added 'rented' option here
     ], string='Status', readonly=True, copy=False, index=True, tracking=3, default='draft')
+
+    @api.model
+    def create(self, values):
+        if 'order_line' in values:
+            rental_products = []
+            for line in values.get('order_line'):
+                product_id = line[2].get('product_id')
+                product = self.env['product.product'].browse(product_id)
+                if product.can_be_rented:
+                    rental_products.append({
+                        'product_id': product_id,
+                        'quantity_reserved': line[2].get('product_uom_qty'),
+                        'start_date': values.get('rental_start_date'),
+                        'end_date': values.get('rental_end_date')
+                    })
+            if rental_products:
+                values['rental_reservation_ids'] = [(0, 0, rental) for rental in rental_products]
+
+        # Set default state to 'draft' if not provided
+        values.setdefault('state', 'draft')
+
+        return super(RentalOrder, self).create(values)
 
     def action_confirm(self):
         res = super(RentalOrder, self).action_confirm()
@@ -83,6 +105,9 @@ class RentalOrder(models.Model):
     def action_return_order(self):
         self.ensure_one()
 
+        # Print the context to inspect its contents
+        print("Context:", self.env.context)
+
         # Ensure the order is in the 'rented' state
         if self.state != 'rented':
             raise exceptions.UserError('Order must be in rented state to return.')
@@ -138,28 +163,6 @@ class RentalOrder(models.Model):
         for line in self.order_line:
             line.rental_start_date = self.rental_start_date
             line.rental_end_date = self.rental_end_date
-
-    @api.model
-    def create(self, values):
-        """
-        Override the create method to handle rental product reservations.
-        """
-        if 'order_line' in values:
-            order_lines = values['order_line']
-            rental_products = []
-            for line in order_lines:
-                product_id = line[2].get('product_id')
-                product = self.env['product.product'].browse(product_id)
-                if product.can_be_rented:
-                    rental_products.append({
-                        'product_id': product_id,
-                        'quantity': line[2].get('product_uom_qty'),
-                        'start_date': values.get('rental_start_date'),
-                        'end_date': values.get('rental_end_date')
-                    })
-            if rental_products:
-                values['rental_reservation_ids'] = [(0, 0, rental) for rental in rental_products]
-        return super(RentalOrder, self).create(values)
 
     # @api.model
     # def create(self, values):
