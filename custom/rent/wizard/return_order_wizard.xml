@@ -10,8 +10,8 @@
                         <field name="order_id" invisible="1"/>
                         <field name="line_ids">
                             <tree editable="bottom">
-                                <field name="rental_stock_id"  readonly="1"/>
-                                <field name="quantity_rented" readonly="1"/>
+                                <field name="rental_stock_id" />
+                                <field name="quantity_rented" />
                                 <field name="quantity_to_return"/>
                             </tree>
                         </field>

@@ -23,16 +23,13 @@ class RentalProductTemplate(models.Model):
         string='Quantity', default='available')
     rental_stock_ids = fields.One2many('rental.stock', 'product_id', string='Rental Stock')
 
-    @property
-    def rental_stock_count(self):
-        return sum(self.rental_stock_ids.filtered(lambda stock: stock.product_id == self).mapped('rented_qty'))
-
-    on_rent = fields.Integer(compute='_compute_on_rent', string='On Rent', store=True)
+    on_rent = fields.Integer(compute='_compute_on_rent', string='On Rent')
 
     @api.depends('rental_stock_ids.rented_qty')
     def _compute_on_rent(self):
         for product in self:
-            product.on_rent = product.rental_stock_count
+            rental_stocks = self.env['rental.stock'].search([('product_id.product_tmpl_id', '=', product.id)])
+            product.on_rent = sum(stock.rented_qty for stock in rental_stocks)
 
 
 class RentalProductProduct(models.Model):
