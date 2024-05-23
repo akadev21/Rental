@@ -1,0 +1,36 @@
+<odoo>
+    <data>
+        <record id="return_order_wizard_view" model="ir.ui.view">
+            <field name="name">return.order.wizard.form</field>
+            <field name="model">return.order.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Return Order">
+                    <group>
+                        <field name="return_date"/>
+                        <field name="order_id" invisible="1"/>
+                        <field name="line_ids">
+                            <tree editable="bottom">
+                                <field name="rental_stock_id"  readonly="1"/>
+                                <field name="quantity_rented" readonly="1"/>
+                                <field name="quantity_to_return"/>
+                            </tree>
+                        </field>
+                    </group>
+                    <footer>
+                        <button string="Confirm Return" type="object" name="action_return_order" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_rental_return_wizard" model="ir.actions.act_window">
+            <field name="name">Rental Return</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">return.order.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="return_order_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

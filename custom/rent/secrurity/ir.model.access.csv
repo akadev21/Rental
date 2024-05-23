@@ -10,6 +10,10 @@ access_pickup_order_wizard,access_pickup_order_wizard,model_pickup_order_wizard,
 access_pickup_order_wizard_line,access_pickup_order_wizard_line,model_pickup_order_wizard_line,,1,1,1,1
 access_return_order_wizard,access_return_order_wizard,model_return_order_wizard,,1,1,1,1
 access_return_order_wizard_line,access_return_order_wizard_line,model_return_order_wizard_line,,1,1,1,1
+access_rental_stock,access_rental_stock,model_rental_stock,,1,1,1,1
+access_last_entered_values,access_last_entered_values,model_last_entered_values,,1,1,1,1
+access_last_entered_values_line,access_last_entered_values_line,model_last_entered_values_line,,1,1,1,1
+
 
 
 

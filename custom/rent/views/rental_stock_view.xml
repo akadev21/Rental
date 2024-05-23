@@ -1,0 +1,42 @@
+<odoo>
+    <data>
+        <record id="view_rental_stock_tree" model="ir.ui.view">
+            <field name="name">rental.stock.tree</field>
+            <field name="model">rental.stock</field>
+            <field name="arch" type="xml">
+                <tree string="Rental Stock">
+                    <field name="product_id"/>
+                    <field name="order_id"/>
+                    <field name="reserved_qty"/>
+                    <field name="rented_qty"/>
+                    <field name="returned_qty"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_rental_stock_form" model="ir.ui.view">
+            <field name="name">rental.stock.form</field>
+            <field name="model">rental.stock</field>
+            <field name="arch" type="xml">
+                <form string="Rental Stock">
+                    <group>
+                        <field name="product_id"/>
+                        <field name="order_id"/>
+                        <field name="reserved_qty"/>
+                        <field name="rented_qty"/>
+                        <field name="returned_qty"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_rental_stock" model="ir.actions.act_window">
+            <field name="name">Rental Stock</field>
+            <field name="res_model">rental.stock</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_rental_stock_tree"/>
+        </record>
+
+        <menuitem id="menu_rental_stock" name="Rental Stock" parent="menu_rental" action="action_rental_stock"/>
+    </data>
+</odoo>

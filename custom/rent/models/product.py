@@ -21,17 +21,19 @@ class RentalProductTemplate(models.Model):
         ('rented', 'Rented'),
         ('maintenance', 'Maintenance')],
         string='Quantity', default='available')
+    rental_stock_ids = fields.One2many('rental.stock', 'product_id', string='Rental Stock')
 
-    on_rent = fields.Float(string="On Rent", compute='_compute_on_rent')
+    @property
+    def rental_stock_count(self):
+        return sum(self.rental_stock_ids.filtered(lambda stock: stock.product_id == self).mapped('rented_qty'))
 
-    @api.depends('product_variant_ids')
+    on_rent = fields.Integer(compute='_compute_on_rent', string='On Rent', store=True)
+
+    @api.depends('rental_stock_ids.rented_qty')
     def _compute_on_rent(self):
         for product in self:
-            reservations = self.env['rental.reservation'].search([
-                ('product_id', 'in', product.product_variant_ids.ids),
-                ('order_id.state', '=', 'rented')
-            ])
-            product.on_rent = sum(reservation.quantity_delivered for reservation in reservations)
+            product.on_rent = product.rental_stock_count
+
 
 class RentalProductProduct(models.Model):
     _description = 'Rental Product Product'
@@ -48,6 +50,4 @@ class RentalProductProduct(models.Model):
     extra_hour = fields.Float(related='product_tmpl_id.extra_hour', string='Extra Hour', readonly=True)
     extra_day = fields.Float(related='product_tmpl_id.extra_day', string='Extra Day', readonly=True)
     security_time = fields.Float(related='product_tmpl_id.security_time', string='Security Time', readonly=True)
-    on_rent = fields.Float(related='product_tmpl_id.on_rent', string='On Rent', readonly=True)
-    # pickup_wizard_line_ids = fields.One2many(related='product_tmpl_id.pickup_wizard_line_ids',
-    #                                          string='Pickup Wizard Lines', readonly=True)
+    on_rent = fields.Integer(related='product_tmpl_id.on_rent', string='On Rent', readonly=True)

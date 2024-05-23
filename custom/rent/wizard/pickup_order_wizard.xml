@@ -1,0 +1,36 @@
+<odoo>
+    <data>
+        <record id="pickup_order_wizard_view" model="ir.ui.view">
+            <field name="name">pickup.order.wizard.form</field>
+            <field name="model">pickup.order.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Pickup Order">
+                    <group>
+                        <field name="pickup_date"/>
+                        <field name="order_id" invisible="1"/>
+                        <field name="line_ids">
+                            <tree editable="bottom">
+                                <field name="rental_stock_id" />
+                                <field name="quantity_reserved" />
+                                <field name="quantity_to_pickup"/>
+                            </tree>
+                        </field>
+                    </group>
+                    <footer>
+                        <button string="Confirm Pickup" type="object" name="action_pickup_order" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_rental_pickup_wizard" model="ir.actions.act_window">
+            <field name="name">Rental Pickup</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">pickup.order.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="pickup_order_wizard_view"/>
+            <field name="target">new</field>
+        </record>
+    </data>
+</odoo>

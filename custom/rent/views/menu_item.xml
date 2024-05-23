@@ -4,6 +4,7 @@
 
     <menuitem name="Rental" id="menu_root_rental" sequence="2">
         <menuitem id="menu_rental_order" name="Rental Order" action="action_rental_order" sequence="1"/>
+
         <menuitem id="menu_rental" name="Product" sequence="2">
             <menuitem id="menu_products" name="Product" action="action_product"/>
 
