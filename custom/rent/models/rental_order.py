@@ -9,7 +9,7 @@ class RentalOrder(models.Model):
     _inherit = 'sale.order'
 
     partner_id = fields.Many2one('res.partner', string='Customer', required=True, size=64)
-
+    product_id = fields.Many2one('product.product', string='Product', related='order_line.product_id')
     rental_start_date = fields.Datetime(string='Rental Start Date', default=lambda self: fields.Date.today())
     rental_end_date = fields.Datetime(string='Rental End Date', default=lambda self: fields.Date.today())
     rental_return_date = fields.Datetime(string='Rental Return Date')

@@ -61,12 +61,63 @@
                 </xpath>
             </field>
         </record>
+        <record id="rental_schedule_timeline_order" model="ir.ui.view">
+            <field name="model">sale.order</field>
+            <field name="type">timeline</field>
+            <field name="arch" type="xml">
+                <timeline
+                        date_start="rental_start_date"
+                        date_stop="rental_end_date"
+                        default_group_by="product_id"
+                        event_open_popup="true"
+                        colors="#02FFF4: state == 'reserved'; #00FF3A: state == 'rented'"
+                >
+                    <filter name="reserved" string="Reserved" domain="[('state', '=', 'reserved')]" default="1"/>
+                    <filter name="rented" string="Rented" domain="[('state', '=', 'rented')]" default="1"/>
+                    <field name="name"/>
+                    <field name="state"/>
+                    <field name="partner_id"/>
+                    <field name="rental_start_date"/>
+                    <field name="rental_end_date"/>
+                    <templates>
+                        <t t-name="timeline-item">
+                            <div class="o_project_timeline_item">
+                                <span name="display_name">
+                                    <t t-esc="record.display_name"/>
+                                </span>
+                                <small
+                                        name="planned_hours"
+                                        class="text-info ml4"
+                                        t-if="record.planned_hours"
+                                >
+                                    <t
+                                            t-esc="record.note"
+                                    />
+                                </small>
+                            </div>
+                        </t>
+                    </templates>
+                </timeline>
+            </field>
+        </record>
+        <record id="view_rental_order_search" model="ir.ui.view">
+            <field name="name">rental.order.search</field>
+            <field name="model">sale.order</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="rental_start_date" string="Start Date"/>
+                    <filter string="Reserved" name="filter_Reserved" domain="[('state', '=', 'reserved')]"/>
+                    <filter string="Rented" name="filter_rented" domain="[('state', '=', 'rented')]"/>
 
+                    <!-- Include other custom filters here -->
+                </search>
+            </field>
+        </record>
 
         <record id="action_rental_order" model="ir.actions.act_window">
             <field name="name">Rental Orders</field>
             <field name="res_model">sale.order</field>
-            <field name="view_mode">tree,form,kanban</field>
+            <field name="view_mode">tree,form,kanban,timeline</field>
             <field name="context">{'search_default_rented': 1}</field>
             <field name="domain">[('state', '!=', 'cancel')]</field>
         </record>
