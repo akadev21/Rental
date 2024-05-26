@@ -1,0 +1,72 @@
+<odoo>
+    <record id="view_rental_report_pivot" model="ir.ui.view">
+        <field name="name">rental.report.pivot</field>
+        <field name="model">rental.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Rental Analysis" disable_linking="True" sample="1">
+                <field name="state" type="col"/>
+                <field name="date" interval="month" type="row"/>
+                <field name="price_subtotal" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_rental_report_graph" model="ir.ui.view">
+        <field name="name">rental.report.graph</field>
+        <field name="model">rental.report</field>
+        <field name="arch" type="xml">
+            <graph string="Rental Analysis" type="line" sample="1" disable_linking="1">
+                <field name="date" type="row" interval="day"/>
+                <field name="price_subtotal" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_rental_report_search" model="ir.ui.view">
+        <field name="name">rental.report.search</field>
+        <field name="model">rental.report</field>
+        <field name="arch" type="xml">
+            <search string="Rental Analysis">
+                <field name="date"/>
+                <filter string="Date" name="year" invisible="1" date="date" default_period="this_year"/>
+                <filter name="Quotations" string="Quotations" domain="[('state','in', ('draft', 'sent'))]"/>
+                <filter name="Rentals" string="Rental Orders"
+                        domain="[('state','not in',('draft', 'cancel', 'sent'))]"/>
+                <separator/>
+                <filter name="filter_date" date="date" default_period="this_month"/>
+                <field name="user_id"/>
+                <field name="product_id"/>
+                <field name="partner_id"/>
+                <group expand="0" string="Extended Filters">
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </group>
+                <group expand="1" string="Group By">
+                    <filter string="Salesperson" name="User" context="{'group_by':'user_id'}"/>
+                    <filter string="Customer" name="Customer" context="{'group_by':'partner_id'}"/>
+                    <filter string="Product" name="Product" context="{'group_by':'product_id'}"/>
+                    <filter string="Company" name="company" groups="base.group_multi_company"
+                            context="{'group_by':'company_id'}"/>
+                    <separator/>
+                    <filter string="Order Date" name="date" context="{'group_by':'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rental_report_all" model="ir.actions.act_window">
+        <field name="name">Rental Analysis</field>
+        <field name="res_model">rental.report</field>
+        <field name="view_mode">graph,pivot</field>
+        <field name="view_id"></field>
+        <field name="search_view_id" ref="view_rental_report_search"/>
+        <field name="context">{'search_default_Rentals':1, 'group_by_no_leaf':1,'group_by':[],
+            'search_default_filter_date': 1}
+        </field>
+        <field name="help">This report performs analysis on your rental orders. Use this report to perform analysis on
+            rentals not having invoiced yet.
+        </field>
+
+    </record>
+            <menuitem id="menu_rental_stock" name="Rental Report" parent="menu_root_rental" action="action_rental_report_all"/>
+
+</odoo>

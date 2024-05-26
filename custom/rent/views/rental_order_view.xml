@@ -113,11 +113,21 @@
                 </search>
             </field>
         </record>
+        <record id="view_order_product_graph" model="ir.ui.view">
+         <field name="name">sale.report.graph</field>
+         <field name="model">sale.order</field>
+         <field name="arch" type="xml">
+             <graph string="Renting Analysis" type="line" sample="1" disable_linking="1">
+                 <field name="name" type="measure"/>
+                 <field name="name" type="measure"/>
+             </graph>
+         </field>
+    </record>
 
         <record id="action_rental_order" model="ir.actions.act_window">
             <field name="name">Rental Orders</field>
             <field name="res_model">sale.order</field>
-            <field name="view_mode">tree,form,kanban,timeline</field>
+            <field name="view_mode">tree,form,kanban,timeline,graph</field>
             <field name="context">{'search_default_rented': 1}</field>
             <field name="domain">[('state', '!=', 'cancel')]</field>
         </record>

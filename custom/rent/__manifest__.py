@@ -5,7 +5,7 @@
     'summary': 'App for managing rentals',
     'category': 'Management',
     'author': 'Ouchari Ibrahim',
-    'depends': ['base', 'product', 'stock', 'sale','web_timeline'],  # Added dependency on the base module
+    'depends': ['base', 'product', 'stock', 'sale', 'web_timeline'],  # Added dependency on the base module
     'data': [
         'secrurity/ir.model.access.csv',
         'wizard/pickup_order_wizard.xml',
@@ -15,6 +15,7 @@
         'views/rental_period_view.xml',
         'views/menu_item.xml',
         'views/rental_stock_view.xml',
+        'views/rental_report_view.xml',
 
     ],
     'installable': True,
