@@ -18,6 +18,9 @@
         'views/rental_report_view.xml',
 
     ],
+    'assets': {
+        'web.assets_backend': ['rent/static/src/css/style.css']
+    },
     'installable': True,
     'application': True
 }

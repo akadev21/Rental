@@ -8,6 +8,7 @@
         <menuitem id="menu_rental" name="Product" sequence="2">
             <menuitem id="menu_products" name="Product" action="action_product"/>
 
+
         </menuitem>
         <menuitem id="menu_config" name="Configuration" sequence="3">
             <menuitem id="menu_rental_period" name="Rental Period" action="action_rental_period"/>

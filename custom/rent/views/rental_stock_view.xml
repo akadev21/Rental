@@ -36,7 +36,9 @@
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_rental_stock_tree"/>
         </record>
-
-        <menuitem id="menu_rental_stock" name="Rental Stock" parent="menu_rental" action="action_rental_stock"/>
+        <menuitem id="menu_rental_stock"
+                  name="Rental Stock"
+                  parent="menu_rental"
+                  action="action_rental_stock"/>
     </data>
 </odoo>

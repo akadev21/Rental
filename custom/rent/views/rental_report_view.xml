@@ -67,6 +67,6 @@
         </field>
 
     </record>
-            <menuitem id="menu_rental_stock" name="Rental Report" parent="menu_root_rental" action="action_rental_report_all"/>
+            <menuitem id="menu_rental_report" name="Rental Report" parent="menu_root_rental" action="action_rental_report_all"/>
 
 </odoo>

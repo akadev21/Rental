@@ -18,11 +18,21 @@ class RentalOrder(models.Model):
         ('draft', 'Quotation'),
         ('sent', 'Quotation Sent'),
         ('sale', 'Sale Order'),
-        ('done', 'Locked'),
+        ('done', 'Done'),
         ('reserved', 'Reserved'),
         ('cancel', 'Cancelled'),
-        ('rented', 'Rented'),  # Added 'rented' option here
+        ('rented', 'Rented'),
+
     ], string='Status', readonly=True, copy=False, index=True, tracking=3, default='draft')
+    stage = fields.Selection([
+        ('reserved', 'Reserved'),
+        ('picked_up', 'Picked Up'),
+        ('returned', 'Returned'),
+    ], string='Stage', default='reserved', readonly=True)
+
+    def mark_as_done(self):
+        for order in self:
+            order.write({'state': 'done'})
 
     @api.model
     def create(self, values):

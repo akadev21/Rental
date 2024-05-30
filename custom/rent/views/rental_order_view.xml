@@ -21,11 +21,11 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//form/sheet/group/group/field[@name='partner_id']" position="after">
-                    <field name="rental_start_date" string="Rental Start Date"/>
-                    <field name="rental_end_date" string="Rental End Date"/>
-                    <button name="reset_dates" string="Reset Dates" type="object" class="btn-secondary"/>
 
+                <xpath expr="//form/sheet/group/group/field[@name='partner_id']" position="after">
+                    <field name="rental_start_date" string="Rental Start Date" widget="date"/>
+                    <field name="rental_end_date" string="Rental End Date" widget="date"/>
+                    <button name="reset_dates" string="Reset Dates" type="object" class="btn-secondary"/>
                 </xpath>
                 <xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="attributes">
                     <attribute name="domain">[('can_be_rented', '=', True)]</attribute>
@@ -40,24 +40,26 @@
                     <field name="rental_end_date"/>
                     <field name="rental_price"/>
                 </xpath>
+                <xpath expr="//form/sheet/div[@name='button_box']" position="after">
+                    <widget name="web_ribbon" title="Done"
+                            attrs="{'invisible': [('state', '!=', 'done')]}"/>
+                </xpath>
+           
+
+                <!-- Add state badges with different colors for each state -->
                 <xpath expr="//header" position="inside">
+
                     <xpath expr="//button[@name='action_quotation_send']" position="attributes">
                         <attribute name="attrs">{'invisible': [('state', 'not in', ['draft'])]}</attribute>
                     </xpath>
                     <xpath expr="//button[@name='action_confirm']" position="attributes">
                         <attribute name="attrs">{'invisible': [('state', 'not in', ['draft', 'sent'])]}</attribute>
                     </xpath>
-                    <xpath expr="//button[@name='action_cancel']" position="attributes">
-                        <attribute name="attrs">{'invisible': [('state', 'not in', ['draft', 'sent', 'confirmed',
-                            'pickup'])]}
-                        </attribute>
-                    </xpath>
-                    <!--                    <button name="preview_sale_order" string="Customer Preview" type="object" class="btn-primary"-->
-                    <!--                            attrs="{'invisible': [('state', '!=', 'confirmed')]}"/>-->
-                    <button name="%(rent.action_rental_pickup_wizard)d" string="Pickup" type="action"
-                            states="reserved" context="{'default_order_id': active_id}"/>
-                    <button name="%(rent.action_rental_return_wizard)d" string="Return" type="action"
-                            states="rented" context="{'default_order_id': active_id}"/>
+
+                    <button name="%(rent.action_rental_pickup_wizard)d" string="Pickup" type="action" states="reserved"
+                            class="btn btn-success" context="{'default_order_id': active_id}"/>
+                    <button name="%(rent.action_rental_return_wizard)d" string="Return" type="action" states="rented"
+                            class="btn btn-success" context="{'default_order_id': active_id}"/>
                 </xpath>
             </field>
         </record>
@@ -114,15 +116,15 @@
             </field>
         </record>
         <record id="view_order_product_graph" model="ir.ui.view">
-         <field name="name">sale.report.graph</field>
-         <field name="model">sale.order</field>
-         <field name="arch" type="xml">
-             <graph string="Renting Analysis" type="line" sample="1" disable_linking="1">
-                 <field name="name" type="measure"/>
-                 <field name="name" type="measure"/>
-             </graph>
-         </field>
-    </record>
+            <field name="name">sale.report.graph</field>
+            <field name="model">sale.order</field>
+            <field name="arch" type="xml">
+                <graph string="Renting Analysis" type="line" sample="1" disable_linking="1">
+                    <field name="name" type="measure"/>
+                    <field name="name" type="measure"/>
+                </graph>
+            </field>
+        </record>
 
         <record id="action_rental_order" model="ir.actions.act_window">
             <field name="name">Rental Orders</field>
