@@ -43,9 +43,8 @@
                 <xpath expr="//form/sheet/div[@name='button_box']" position="after">
                     <widget name="web_ribbon" title="Done"
                             attrs="{'invisible': [('state', '!=', 'done')]}"/>
+                    
                 </xpath>
-           
-
                 <!-- Add state badges with different colors for each state -->
                 <xpath expr="//header" position="inside">
 
