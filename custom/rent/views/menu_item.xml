@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
+    <!-- Root Menu -->
+    <menuitem name="Rental" id="menu_root_rental" sequence="2"/>
 
+    <!-- Rental Order Menu -->
+    <menuitem id="menu_rental_order" name="Rental Order" action="action_rental_order" parent="menu_root_rental"
+              sequence="1"/>
+    <menuitem id="menu_rental_timeline" name="Schedule" action="action_rental_schedule_timeline"
+              parent="menu_root_rental" sequence="2" groups="rent.rental_admin_group,rent.rental_manager_group"/>
 
-    <menuitem name="Rental" id="menu_root_rental" sequence="2">
-        <menuitem id="menu_rental_order" name="Rental Order" action="action_rental_order" sequence="1"/>
+    <!-- Products Menu -->
+    <menuitem id="menu_rental" name="Product" parent="menu_root_rental" sequence="3"/>
+    <menuitem id="menu_products" name="Product" action="action_product" parent="menu_rental"/>
 
-        <menuitem id="menu_rental" name="Product" sequence="2">
-            <menuitem id="menu_products" name="Product" action="action_product"/>
-
-
-        </menuitem>
-        <menuitem id="menu_config" name="Configuration" sequence="3">
-            <menuitem id="menu_rental_period" name="Rental Period" action="action_rental_period"/>
-
-        </menuitem>
-
-    </menuitem>
+    <!-- Configuration Menu -->
+    <menuitem id="menu_config" name="Configuration" parent="menu_root_rental"  sequence="5"/>
+    <menuitem id="menu_rental_period" name="Rental Period" action="action_rental_period" parent="menu_config"/>
+    <menuitem id="menu_rental_report" name="Report" parent="menu_root_rental" action="action_rental_report_all"
+              sequence="4" groups="rent.rental_admin_group,rent.rental_manager_group" />
 
 </odoo>

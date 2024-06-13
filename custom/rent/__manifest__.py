@@ -7,12 +7,14 @@
     'author': 'Ouchari Ibrahim',
     'depends': ['base', 'product', 'stock', 'sale', 'web_timeline'],  # Added dependency on the base module
     'data': [
-        'secrurity/ir.model.access.csv',
+        'security/rental_security.xml',
+        'security/ir.model.access.csv',
         'wizard/pickup_order_wizard.xml',
         'wizard/return_order_wizard.xml',
         'views/rental_order_view.xml',
         'views/product_view.xml',
         'views/rental_period_view.xml',
+        'views/timeline_view.xml',
         'views/menu_item.xml',
         'views/rental_stock_view.xml',
         'views/rental_report_view.xml',

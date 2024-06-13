@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="rental_schedule_timeline_order" model="ir.ui.view">
+            <field name="name">sale.order.timeline.view</field>
+            <field name="model">sale.order</field>
+            <field name="type">timeline</field>
+            <field name="arch" type="xml">
+                <timeline
+                        date_start="rental_start_date"
+                        date_stop="rental_end_date"
+                        default_group_by="product_id"
+                        event_open_popup="true"
+                        colors="#02FFF4: state == 'reserved'; #00FF3A: state == 'rented'"
+                        groups="rent.rental_admin_group,rent.rental_manager_group"
+                        create="false"
+                        edit="false"
+                        delete="false"
+                >
+                    <filter name="reserved" string="Reserved" domain="[('state', '=', 'reserved')]" default="1"/>
+                    <filter name="rented" string="Rented" domain="[('state', '=', 'rented')]" default="1"/>
+                    <field name="name"/>
+                    <field name="state"/>
+                    <field name="partner_id"/>
+                    <field name="rental_start_date"/>
+                    <field name="rental_end_date"/>
+                    <templates>
+                        <t t-name="timeline-item">
+                            <div class="o_project_timeline_item">
+                                <span name="display_name">
+                                    <t t-esc="record.display_name"/>
+                                </span>
+                                <small
+                                        name="planned_hours"
+                                        class="text-info ml4"
+                                        t-if="record.planned_hours"
+                                >
+                                    <t
+                                            t-esc="record.note"
+                                    />
+                                </small>
+                            </div>
+                        </t>
+                    </templates>
+                </timeline>
+            </field>
+        </record>
+         <record id="action_rental_schedule_timeline" model="ir.actions.act_window">
+            <field name="name">Rental Schedule Timeline</field>
+            <field name="res_model">sale.order</field>
+            <field name="view_mode">timeline</field>
+            <field name="context">{'search_default_state_rented': 1, 'search_default_state_reserved': 1, 'search_default_state_done': 1}</field>
+            <field name="domain">[('state', 'in', ['rented', 'reserved', 'done'])]</field>
+        </record>
+    </data>
+</odoo>
