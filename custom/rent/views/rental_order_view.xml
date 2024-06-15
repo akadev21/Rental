@@ -22,6 +22,7 @@
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
 
+
                 <xpath expr="//form/sheet/group/group/field[@name='partner_id']" position="after">
                     <field name="rental_start_date" string="Rental Start Date" widget="date"/>
                     <field name="rental_end_date" string="Rental End Date" widget="date"/>
@@ -39,27 +40,31 @@
                     <field name="rental_start_date"/>
                     <field name="rental_end_date"/>
                     <field name="rental_price"/>
+                    <field name="extra_charge"/>
+                    <field name="extra_hour" optional="1"/>
+                    <field name="extra_day" optional="1"/>
+                    <field name="late_hours" optional="1"/>
+                    <field name="late_days" optional="1"/>
+                    <field name="return_date" optional="1"/>
+                    <field name="on_return_date" optional="1"/>
                 </xpath>
                 <xpath expr="//form/sheet/div[@name='button_box']" position="after">
-                    <widget name="web_ribbon" title="Done"
-                            attrs="{'invisible': [('state', '!=', 'done')]}"/>
-
+                    <widget name="web_ribbon" title="Done" attrs="{'invisible': [('state', '!=', 'done')]}"/>
                 </xpath>
                 <!-- Add state badges with different colors for each state -->
                 <xpath expr="//header" position="inside">
-
                     <xpath expr="//button[@name='action_quotation_send']" position="attributes">
                         <attribute name="attrs">{'invisible': [('state', 'not in', ['draft'])]}</attribute>
                     </xpath>
                     <xpath expr="//button[@name='action_confirm']" position="attributes">
                         <attribute name="attrs">{'invisible': [('state', 'not in', ['draft', 'sent'])]}</attribute>
                     </xpath>
-
-                    <button name="%(rent.action_rental_pickup_wizard)d" string="Pickup" type="action" states="reserved"
-                            class="btn btn-success" context="{'default_order_id': active_id}"/>
-                    <button name="%(rent.action_rental_return_wizard)d" string="Return" type="action" states="rented"
-                            class="btn btn-success" context="{'default_order_id': active_id}"/>
+                    <button name="%(rent.action_rental_pickup_wizard)d" string="Pickup" type="action"
+                            states="reserved" class="btn btn-success" context="{'default_order_id': active_id}"/>
+                    <button name="%(rent.action_rental_return_wizard)d" string="Return" type="action"
+                            states="rented" class="btn btn-success" context="{'default_order_id': active_id}"/>
                 </xpath>
+
             </field>
         </record>
 

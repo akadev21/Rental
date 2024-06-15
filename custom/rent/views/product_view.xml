@@ -6,6 +6,7 @@
             <field name="model">product.template</field>
             <field name="inherit_id" ref="product.product_template_only_form_view"/>
             <field name="arch" type="xml">
+
                 <xpath expr="//button[@name='action_open_quants']" position="after">
                     <button class="oe_stat_button" name="on_rent" type="object" icon="fa-calendar">
                         <div class="o_field_widget o_stat_info">
@@ -20,14 +21,25 @@
                 <xpath expr="//group[@name='group_general']" position="inside">
                     <field name="description_rent" string="Rent Description"/>
                 </xpath>
-                <xpath expr="//group[@name='group_standard_price']" position="inside">
-                    <field name="daily_price" string="Rental Price"/>
-                </xpath>
+<!--                <xpath expr="//group[@name='group_standard_price']" position="inside">-->
+<!--                    <field name="daily_price" string="Rental Price"/>-->
+<!--                </xpath>-->
                 <xpath expr="//field[@name='purchase_ok']" position="before">
                     <div modifiers="{}">
                         <field name="can_be_rented" string="Can be Rented"/>
                         <label for="can_be_rented" modifiers="{}"/>
                     </div>
+                </xpath>
+                <xpath expr="//page[@name='sales']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <!-- Hide the purchase notebook -->
+                <xpath expr="//page[@name='purchase']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <!-- Hide the inventory notebook -->
+                <xpath expr="//page[@name='inventory']" position="attributes">
+                    <attribute name="invisible">1</attribute>
                 </xpath>
                 <xpath expr="//page[@name='general_information']" position="after">
                     <page string="Time-based pricing" name="pricing">

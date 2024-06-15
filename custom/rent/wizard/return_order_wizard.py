@@ -1,13 +1,36 @@
 from odoo import models, fields, api, exceptions
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class ReturnOrderWizard(models.TransientModel):
     _name = 'return.order.wizard'
     _description = 'Return Order Wizard'
 
-    return_date = fields.Date(string='Return Date', required=True)
+    return_date = fields.Datetime(string='Return Date', required=True)
     order_id = fields.Many2one('sale.order', string='Order Reference', required=True)
     line_ids = fields.One2many('return.order.wizard.line', 'wizard_id', string='Order Lines')
+    reservation_id = fields.Many2one('rental.reservation', string='Rental Reservation')
+
+    def confirm_return(self):
+        self.ensure_one()
+        _logger.info("Confirming return for order %s with return date: %s", self.order_id.id, self.return_date)
+
+        # Update the return date on the sale.order
+        self.order_id.write({'rental_return_date': self.return_date})
+        _logger.info("Updated rental_return_date on sale.order %s to: %s", self.order_id.id, self.return_date)
+
+        # Update return date on related rental stock items
+        self.update_rental_stock_return_date()
+
+        return {'type': 'ir.actions.act_window_close'}
+
+    def update_rental_stock_return_date(self):
+        for line in self.line_ids:
+            _logger.info("Updating return date for rental.stock %s to: %s", line.rental_stock_id.id, self.return_date)
+            line.rental_stock_id.write({'return_date': self.return_date})
+            _logger.info("Updated return_date for rental.stock %s to: %s", line.rental_stock_id.id, self.return_date)
 
     @api.onchange('order_id')
     def _onchange_order_id(self):
@@ -29,10 +52,11 @@ class ReturnOrderWizard(models.TransientModel):
             if line.quantity_to_return > line.quantity_rented:
                 raise exceptions.ValidationError('Quantity to Return cannot exceed Rented Quantity.')
 
-            # Update rented quantity and returned quantity in rental stock
+            # Update rented quantity and returned quantity in rental stock, including return_date
             line.rental_stock_id.write({
                 'rented_qty': line.rental_stock_id.rented_qty - line.quantity_to_return,
                 'returned_qty': line.rental_stock_id.returned_qty + line.quantity_to_return,
+                'return_date': self.return_date,  # Assuming return_date is a field in ReturnOrderWizard
             })
 
         # Check if all rental stock lines for the order have zero rented quantity
@@ -41,8 +65,9 @@ class ReturnOrderWizard(models.TransientModel):
         if all_rented_zero:
             self.order_id.write({'state': 'done'})
 
+        return {'type': 'ir.actions.act_window_close'}
 
-class ReturnOrderLineWizard(models.TransientModel):
+class ReturnOrderWizardLine(models.TransientModel):
     _name = 'return.order.wizard.line'
     _description = 'Return Order Wizard Line'
 

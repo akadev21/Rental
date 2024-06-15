@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <!-- Root Menu -->
-    <menuitem name="Rental" id="menu_root_rental" sequence="2"/>
+    <menuitem name="Rental" id="menu_root_rental" sequence="2" web_icon="rent,static\description\applogo.png"/>
 
     <!-- Rental Order Menu -->
     <menuitem id="menu_rental_order" name="Rental Order" action="action_rental_order" parent="menu_root_rental"
